@@ -394,9 +394,18 @@ samba-tool user delete $USER10_NAME -d0
 
 samba-tool user create "$USER10_NAME" "$USER10_PASSWORD" -d0
 samba-tool user setexpiry --noexpiry $USER10_NAME -d0
-# TODO
-# This user is set to be always out of logon hours
-# NOT SUPPORTED IN SAMBA YET
+# UF_PASSWD_CANT_CHANGE
+cat > tmp.ldif << EOF
+dn: CN=$USER10_NAME,CN=Users,$DN_DC_NAME
+changetype: modify
+replace: userAccountControl
+userAccountControl: 576
+-
+replace: logonHours
+logonHours:: AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+EOF
+ldbmodify -H /etc/samba/sam.ldb --verbose -d0 < tmp.ldif
+rm tmp.ldif
 
 ###########################################################
 # USER11
